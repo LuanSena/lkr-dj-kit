@@ -50,6 +50,8 @@ export function DownloaderForm() {
         const message = data.error || t("errors.failed");
         if (message.includes("YouTube match") || message.includes("No YouTube")) {
           setError(t("errors.noMatch"));
+        } else if (message.toLowerCase().includes("login required")) {
+          setError(t("errors.youtubeBlocked"));
         } else {
           setError(message);
         }

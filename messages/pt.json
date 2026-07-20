@@ -92,7 +92,8 @@
     "errors": {
       "invalidUrl": "URL inválida para esta plataforma",
       "failed": "Falha ao baixar. Tente novamente ou use outra URL.",
-      "noMatch": "Não encontramos correspondência no YouTube. Tente colar o link do YouTube diretamente."
+      "noMatch": "Não encontramos correspondência no YouTube. Tente colar o link do YouTube diretamente.",
+      "youtubeBlocked": "O YouTube bloqueou este download. Tente outro vídeo ou aguarde alguns minutos."
     }
   },
   "converter": {

@@ -1,17 +1,16 @@
 import { Innertube } from "youtubei.js";
 import { extractYouTubeVideoId } from "@/lib/download/youtube-id";
+import { getContentPoToken, getPoContext } from "@/lib/download/youtube-po";
+import { ensureYouTubeEvaluator } from "@/lib/download/youtube-platform";
+
+ensureYouTubeEvaluator();
 
 export { extractYouTubeVideoId };
 
-const YT_CLIENTS = [
-  "IOS",
-  "ANDROID_VR",
-  "ANDROID",
-  "TV_EMBEDDED",
-  "WEB_EMBEDDED",
-  "WEB",
-] as const;
-type YouTubeClient = (typeof YT_CLIENTS)[number];
+const FAST_CLIENTS = ["ANDROID_VR", "IOS", "ANDROID", "MWEB"] as const;
+const PO_CLIENTS = ["MWEB", "WEB", "IOS", "ANDROID"] as const;
+
+type YouTubeClient = (typeof FAST_CLIENTS)[number] | (typeof PO_CLIENTS)[number];
 
 let ytInstance: Innertube | null = null;
 
@@ -31,19 +30,22 @@ function getExtensionFromMime(mimeType: string): string {
   return "audio";
 }
 
-function getAudioFormats(info: Awaited<ReturnType<Innertube["getInfo"]>>) {
-  const formats = info.streaming_data?.adaptive_formats ?? [];
-  const audioOnly = formats
-    .filter((format) => format.has_audio && !format.has_video)
-    .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
+function getMimeFromFormat(format?: { mime_type?: string } | null) {
+  return format?.mime_type?.split(";")[0] ?? "audio/mp4";
+}
 
-  if (audioOnly.length) {
-    return audioOnly;
-  }
-
-  return formats
-    .filter((format) => format.has_audio)
-    .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
+function isRetriableYouTubeError(message: string) {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("login required") ||
+    lower.includes("no audio formats") ||
+    lower.includes("no matching formats") ||
+    lower.includes("non 2xx") ||
+    lower.includes("streaming data not available") ||
+    lower.includes("unplayable") ||
+    lower.includes("403") ||
+    lower.includes("javascript evaluator")
+  );
 }
 
 function wrapReadableStream(stream: ReadableStream<Uint8Array>) {
@@ -101,71 +103,114 @@ async function verifyStream(stream: ReadableStream<Uint8Array>) {
   });
 }
 
-function getMimeFromFormat(format?: { mime_type?: string } | null) {
-  return format?.mime_type?.split(";")[0] ?? "audio/mp4";
-}
+const STREAM_HEADERS = {
+  Accept: "*/*",
+  "Accept-Language": "en-US,en;q=0.9",
+  Origin: "https://www.youtube.com",
+  Referer: "https://www.youtube.com",
+  "User-Agent": "Mozilla/5.0",
+};
 
-async function downloadWithOptions(
-  info: Awaited<ReturnType<Innertube["getInfo"]>>,
-  client: YouTubeClient,
-  options: { itag?: number; quality?: string }
-) {
-  const stream = await info.download({
-    type: "audio",
-    client,
-    ...options,
-  });
-
-  return verifyStream(stream);
-}
-
-async function downloadAudioForClient(
-  info: Awaited<ReturnType<Innertube["getInfo"]>>,
-  client: YouTubeClient,
+async function streamFromFormat(
+  info: Awaited<ReturnType<Innertube["getBasicInfo"]>>,
   yt: Innertube
 ) {
-  const audioFormats = getAudioFormats(info);
+  const format = info.chooseFormat({ type: "audio", quality: "best" });
+  const url = await format.decipher(yt.session.player);
+
+  if (!url) {
+    throw new Error("No valid URL to decipher");
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      ...STREAM_HEADERS,
+      "User-Agent": yt.session.user_agent ?? STREAM_HEADERS["User-Agent"],
+    },
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`Stream fetch failed (${response.status})`);
+  }
+
+  return {
+    stream: await verifyStream(wrapReadableStream(response.body)),
+    mimeType: getMimeFromFormat(format),
+  };
+}
+
+async function downloadWithClient(
+  yt: Innertube,
+  videoId: string,
+  client: YouTubeClient,
+  poToken?: string
+) {
+  const info = await yt.getBasicInfo(videoId, {
+    client,
+    po_token: poToken,
+  });
+
+  const title = info.basic_info.title || "track";
+  const status = info.playability_status?.status;
+
+  if (status === "LOGIN_REQUIRED" && !info.streaming_data) {
+    throw new Error("Video is login required");
+  }
+
+  if (!info.streaming_data?.adaptive_formats?.length) {
+    throw new Error("No audio formats available");
+  }
+
+  try {
+    const stream = await info.download({ type: "audio", quality: "best", client });
+    const result = await verifyStream(stream);
+    const format = info.chooseFormat({ type: "audio", quality: "best" });
+    return {
+      stream: result,
+      title,
+      contentType: getMimeFromFormat(format),
+      extension: getExtensionFromMime(getMimeFromFormat(format)),
+    };
+  } catch {
+    const result = await streamFromFormat(info, yt);
+    return {
+      stream: result.stream,
+      title,
+      contentType: result.mimeType,
+      extension: getExtensionFromMime(result.mimeType),
+    };
+  }
+}
+
+async function downloadWithoutPo(videoId: string) {
+  const yt = await getYouTubeClient();
   const errors: string[] = [];
 
-  const attempts: Array<{ itag?: number; quality?: string }> = [
-    { quality: "best" },
-    ...audioFormats.map((format) => ({ itag: format.itag })),
-  ];
-
-  for (const attempt of attempts) {
+  for (const client of FAST_CLIENTS) {
     try {
-      const stream = await downloadWithOptions(info, client, attempt);
-      const format =
-        audioFormats.find((item) => item.itag === attempt.itag) ?? audioFormats[0];
-      return {
-        stream,
-        mimeType: getMimeFromFormat(format),
-      };
+      return await downloadWithClient(yt, videoId, client);
     } catch (error) {
       errors.push(error instanceof Error ? error.message : "Download failed");
     }
   }
 
-  for (const format of audioFormats) {
+  throw new Error(errors[0] || "Could not download audio from YouTube");
+}
+
+async function downloadWithPo(videoId: string) {
+  const { innertube } = await getPoContext();
+  const contentPoToken = await getContentPoToken(videoId);
+  const errors: string[] = [];
+
+  for (const client of PO_CLIENTS) {
     try {
-      const url = await format.decipher(yt.session.player);
-      if (!url) continue;
-
-      const response = await fetch(url);
-      if (!response.ok || !response.body) {
-        throw new Error(`Stream fetch failed (${response.status})`);
-      }
-
-      return {
-        stream: wrapReadableStream(response.body),
-        mimeType: getMimeFromFormat(format),
-      };
+      return await downloadWithClient(innertube, videoId, client, contentPoToken);
     } catch (error) {
-      errors.push(error instanceof Error ? error.message : "Direct fetch failed");
+      errors.push(error instanceof Error ? error.message : "Download failed");
     }
   }
 
-  throw new Error(errors[0] || "No audio formats available");
+  throw new Error(errors[0] || "Could not download audio from YouTube");
 }
 
 export async function getYouTubeStream(url: string) {
@@ -174,27 +219,16 @@ export async function getYouTubeStream(url: string) {
     throw new Error("Invalid YouTube URL");
   }
 
-  const yt = await getYouTubeClient();
-  const errors: string[] = [];
-  let title = "track";
-
-  for (const client of YT_CLIENTS) {
-    try {
-      const info = await yt.getInfo(videoId, { client });
-      title = info.basic_info.title || title;
-      const result = await downloadAudioForClient(info, client, yt);
-      return {
-        stream: result.stream,
-        title,
-        contentType: result.mimeType,
-        extension: getExtensionFromMime(result.mimeType),
-      };
-    } catch (error) {
-      errors.push(error instanceof Error ? error.message : "Download failed");
+  try {
+    return await downloadWithoutPo(videoId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Download failed";
+    if (!isRetriableYouTubeError(message)) {
+      throw error;
     }
   }
 
-  throw new Error(errors[0] || "Could not download audio from YouTube");
+  return downloadWithPo(videoId);
 }
 
 export async function searchYouTube(query: string, limit = 3): Promise<string[]> {

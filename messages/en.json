@@ -92,7 +92,8 @@
     "errors": {
       "invalidUrl": "Invalid URL for this platform",
       "failed": "Download failed. Try again or use another URL.",
-      "noMatch": "Could not find a YouTube match. Try pasting the YouTube link directly."
+      "noMatch": "Could not find a YouTube match. Try pasting the YouTube link directly.",
+      "youtubeBlocked": "YouTube blocked this download. Try another video or wait a few minutes."
     }
   },
   "converter": {
