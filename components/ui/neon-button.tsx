@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -48,13 +45,13 @@ export function NeonButton({
 
   const classes = cn(
     "group relative block w-full overflow-hidden transition-transform",
-    !disabled && "hover:scale-[1.02] active:scale-[0.98]",
+    !disabled && "hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98]",
     disabled && "pointer-events-none opacity-40",
     variant === "primary" && "btn-neon-border",
     variant === "secondary" &&
-      "border border-violet-500/25 bg-violet-500/5 backdrop-blur-sm hover:border-violet-400/40 hover:bg-violet-500/10 hover:shadow-[0_0_30px_rgba(191,90,242,0.15)]",
+      "border border-violet-500/25 bg-violet-500/5 hover:border-violet-400/40 hover:bg-violet-500/10 hover:shadow-[0_0_30px_rgba(191,90,242,0.15)]",
     variant === "cyan" &&
-      "border border-cyan-500/25 bg-cyan-500/5 backdrop-blur-sm hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)]",
+      "border border-cyan-500/25 bg-cyan-500/5 hover:border-cyan-400/40 hover:bg-cyan-500/10 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)]",
     className
   );
 
@@ -62,33 +59,28 @@ export function NeonButton({
 
   if (href && !disabled) {
     return (
-      <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-        <Link href={href} className={cn(classes, padding, "block")}>
-          {variant === "primary" ? (
-            <span className="relative block bg-[#030308]/80 backdrop-blur-sm">{inner}</span>
-          ) : (
-            inner
-          )}
-        </Link>
-      </motion.div>
+      <Link href={href} className={cn(classes, padding, "block")}>
+        {variant === "primary" ? (
+          <span className="relative block bg-[#030308]/80">{inner}</span>
+        ) : (
+          inner
+        )}
+      </Link>
     );
   }
 
   return (
-    <motion.button
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      whileHover={disabled ? undefined : { y: -2 }}
-      whileTap={disabled ? undefined : { scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
       className={cn(classes, padding, "cursor-pointer")}
     >
       {variant === "primary" ? (
-        <span className="relative block bg-[#030308]/80 backdrop-blur-sm">{inner}</span>
+        <span className="relative block bg-[#030308]/80">{inner}</span>
       ) : (
         inner
       )}
-    </motion.button>
+    </button>
   );
 }

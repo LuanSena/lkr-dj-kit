@@ -1,64 +1,60 @@
 "use client";
 
-import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { ArrowRightLeft, Zap } from "lucide-react";
 import { PirateIcon } from "@/components/icons/pirate-icon";
-import { PerspectiveGrid } from "@/components/animations/perspective-grid";
-import { HeroBackgroundOrb } from "@/components/landing/hero-background-orb";
-import { HeroHudOverlay } from "@/components/landing/hero-hud-overlay";
-import { HeroWaveform } from "@/components/animations/hero-waveform";
 import { GlitchText } from "@/components/animations/glitch-text";
 import { NeonButton } from "@/components/ui/neon-button";
+import { PerspectiveGrid } from "@/components/animations/perspective-grid";
+import { PageHudOverlay } from "@/components/landing/page-hud-overlay";
+import { WaveformFrame } from "@/components/landing/waveform-frame";
+
+const HeroBackgroundOrb = dynamic(
+  () =>
+    import("@/components/landing/hero-background-orb").then((m) => m.HeroBackgroundOrb),
+  { ssr: false }
+);
+
+const HeroWaveform = dynamic(
+  () => import("@/components/animations/hero-waveform").then((m) => m.HeroWaveform),
+  { ssr: false }
+);
 
 export function Hero() {
   const t = useTranslations("hero");
 
   return (
     <section className="relative flex min-h-[100dvh] flex-col overflow-hidden">
-      <PerspectiveGrid />
       <HeroBackgroundOrb />
-      <HeroHudOverlay />
+      <PageHudOverlay showBottomCorners={false} />
+      <PerspectiveGrid />
 
-      <div className="relative z-10 flex flex-1 flex-col justify-between px-4 pb-0 pt-14 sm:px-8 sm:pt-16 lg:px-12">
+      <div className="relative z-10 flex flex-1 flex-col px-4 pt-14 sm:px-8 sm:pt-16 lg:px-12">
         <div className="flex flex-1 flex-col items-center justify-center text-center lg:items-start lg:text-left">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mb-5 inline-flex items-center gap-2 border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 backdrop-blur-md sm:mb-6"
-          >
+          <div className="animate-fade-up mb-5 inline-flex items-center gap-2 border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 sm:mb-6">
             <Zap className="h-3 w-3 animate-pulse text-cyan-400" />
             <span className="font-mono-tech text-[9px] uppercase tracking-[0.35em] text-cyan-300/80 sm:text-[10px]">
               {t("badge")}
             </span>
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          >
+          <div className="animate-fade-up-delayed">
             <GlitchText
               as="h1"
               className="font-display text-[clamp(3.5rem,16vw,9rem)] font-extrabold leading-[0.85] tracking-[-0.05em]"
             >
-              <span className="block text-white drop-shadow-[0_0_60px_rgba(0,240,255,0.35)]">
+              <span className="block text-white drop-shadow-[0_0_40px_rgba(0,240,255,0.25)]">
                 LKR DJ
               </span>
-              <span className="mt-1 block bg-gradient-to-r from-cyan-200 via-violet-300 to-pink-400 bg-clip-text text-transparent drop-shadow-[0_0_80px_rgba(191,90,242,0.4)]">
+              <span className="mt-1 block bg-gradient-to-r from-cyan-200 via-violet-300 to-pink-400 bg-clip-text text-transparent">
                 TOOL
               </span>
             </GlitchText>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-8 flex w-full max-w-lg flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4 lg:max-w-xl"
-          >
+          <div className="animate-fade-up-delayed-2 mt-8 flex w-full max-w-lg flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4 lg:max-w-xl">
             <NeonButton
               href="/tools/downloader"
               variant="primary"
@@ -75,37 +71,31 @@ export function Hero() {
             >
               {t("ctaConvert")}
             </NeonButton>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-8 grid w-full max-w-lg grid-cols-3 gap-px overflow-hidden border border-white/5 bg-white/5 sm:mt-10 lg:max-w-xl"
-          >
+          <div className="animate-fade-up-delayed-3 mt-8 grid w-full max-w-lg grid-cols-3 gap-px overflow-hidden border border-white/5 bg-white/5 sm:mt-10 lg:max-w-xl">
             {[
               { label: "LATENCY", value: "<50ms", accent: "text-cyan-400" },
               { label: "FORMAT", value: "LOSSLESS", accent: "text-violet-400" },
               { label: "PRIVACY", value: "LOCAL", accent: "text-pink-400" },
             ].map((stat) => (
-              <div key={stat.label} className="bg-[#030308]/70 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-4">
-                <p className="font-mono-tech text-[7px] tracking-[0.2em] text-white/25 sm:text-[8px]">{stat.label}</p>
-                <p className={`mt-1 font-mono-tech text-[10px] font-bold sm:text-xs ${stat.accent}`}>{stat.value}</p>
+              <div key={stat.label} className="bg-[#030308]/70 px-3 py-3 sm:px-4 sm:py-4">
+                <p className="font-mono-tech text-[7px] tracking-[0.2em] text-white/25 sm:text-[8px]">
+                  {stat.label}
+                </p>
+                <p className={`mt-1 font-mono-tech text-[10px] font-bold sm:text-xs ${stat.accent}`}>
+                  {stat.value}
+                </p>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
+      </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="relative mt-6 h-[100px] w-full sm:mt-8 sm:h-[130px] lg:h-[160px]"
-        >
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+      <div className="relative z-10 mt-auto animate-fade-up-delayed-3">
+        <WaveformFrame>
           <HeroWaveform />
-          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
-        </motion.div>
+        </WaveformFrame>
       </div>
     </section>
   );

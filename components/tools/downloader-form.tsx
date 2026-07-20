@@ -13,7 +13,6 @@ import {
   getApiEndpoint,
   sanitizeFilename,
 } from "@/lib/download/validators";
-import { convertBlobToMp3, convertBlobToWav } from "@/lib/ffmpeg/converter";
 
 const PLATFORMS: Platform[] = ["youtube", "soundcloud", "spotify"];
 
@@ -79,16 +78,26 @@ export function DownloaderForm() {
         setConverting(true);
         setProgress(65);
 
+        const { convertBlobToMp3, convertBlobToWav } = await import("@/lib/ffmpeg/converter");
+
         if (format === "wav") {
-          blob = await convertBlobToWav(blob, sourceExtension, (value) => {
-            setProgress(65 + Math.round(value * 0.3));
-          });
-          outputExtension = "wav";
+          try {
+            blob = await convertBlobToWav(blob, sourceExtension, (value) => {
+              setProgress(65 + Math.round(value * 0.3));
+            });
+            outputExtension = "wav";
+          } catch {
+            throw new Error(t("errors.failed"));
+          }
         } else {
-          blob = await convertBlobToMp3(blob, sourceExtension, (value) => {
-            setProgress(65 + Math.round(value * 0.3));
-          });
-          outputExtension = "mp3";
+          try {
+            blob = await convertBlobToMp3(blob, sourceExtension, (value) => {
+              setProgress(65 + Math.round(value * 0.3));
+            });
+            outputExtension = blob.type.includes("mpeg") ? "mp3" : sourceExtension;
+          } catch {
+            outputExtension = sourceExtension;
+          }
         }
       }
 

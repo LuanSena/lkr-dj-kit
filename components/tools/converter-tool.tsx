@@ -65,7 +65,8 @@ export function ConverterTool() {
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setSuccess(true);
-    } catch {
+    } catch (error) {
+      console.error("Conversion error:", error);
       setError(t("errors.failed"));
     } finally {
       setLoading(false);

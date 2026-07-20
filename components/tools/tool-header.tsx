@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/lib/i18n/navigation";
 
@@ -16,12 +13,7 @@ export function ToolHeader({
   code?: string;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mb-8 sm:mb-10"
-    >
+    <div className="animate-fade-up mb-8 sm:mb-10">
       <Link
         href="/"
         className="group mb-6 inline-flex items-center gap-2 font-mono-tech text-[10px] uppercase tracking-[0.2em] text-white/30 transition-colors hover:text-cyan-400"
@@ -41,6 +33,6 @@ export function ToolHeader({
       </h1>
       <p className="mt-2 max-w-lg font-mono-tech text-xs text-white/35 sm:text-sm">{subtitle}</p>
       <div className="mt-4 h-px w-16 bg-gradient-to-r from-cyan-500/50 to-transparent" />
-    </motion.div>
+    </div>
   );
 }

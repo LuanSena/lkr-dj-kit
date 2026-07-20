@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 const syne = Syne({
   variable: "--font-syne",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,6 +32,13 @@ export default function RootLayout({
 }>) {
   return (
     <html className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=window.matchMedia;var phone=m("(max-width: 768px)").matches&&m("(pointer: coarse)").matches;var lite=m("(prefers-reduced-motion: reduce)").matches||phone;if(lite)document.documentElement.dataset.liteMode="true";}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col antialiased">{children}</body>
     </html>
   );

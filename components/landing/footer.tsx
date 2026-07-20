@@ -1,9 +1,7 @@
-"use client";
+import { getTranslations } from "next-intl/server";
 
-import { useTranslations } from "next-intl";
-
-export function Footer() {
-  const t = useTranslations("footer");
+export async function Footer() {
+  const t = await getTranslations("footer");
 
   return (
     <footer className="relative py-12 sm:py-14">
@@ -16,9 +14,7 @@ export function Footer() {
           <p className="max-w-sm text-xs leading-relaxed text-white/25 sm:max-w-md">
             {t("disclaimer")}
           </p>
-          <p className="font-mono-tech text-[10px] text-white/15">
-            {t("madeWith")}
-          </p>
+          <p className="font-mono-tech text-[10px] text-white/15">{t("madeWith")}</p>
         </div>
       </div>
     </footer>

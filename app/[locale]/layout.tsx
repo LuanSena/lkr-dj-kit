@@ -3,6 +3,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import { routing } from "@/lib/i18n/routing";
 import { Footer } from "@/components/landing/footer";
+import { LiteModeInit } from "@/components/providers/lite-mode-init";
 import { Toaster } from "sonner";
 
 type Props = {
@@ -41,6 +42,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages}>
+      <LiteModeInit />
       <div className="scanlines flex min-h-screen flex-col bg-[#030308] text-white">
         <main className="flex-1">{children}</main>
         <Footer />

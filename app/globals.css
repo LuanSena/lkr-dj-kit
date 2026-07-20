@@ -195,6 +195,52 @@ body {
   animation: ray-pulse 4s ease-in-out infinite;
 }
 
+@keyframes orb-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+.animate-orb-breathe {
+  animation: orb-breathe 5s ease-in-out infinite;
+}
+
+@keyframes css-wave-dance {
+  0%, 100% { transform: scaleY(0.45); opacity: 0.55; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+.css-wave-bar {
+  transform-origin: bottom;
+  animation: css-wave-dance 1.4s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out both;
+}
+
+.animate-fade-up-delayed {
+  animation: fade-up 0.6s ease-out 0.1s both;
+}
+
+.animate-fade-up-delayed-2 {
+  animation: fade-up 0.6s ease-out 0.2s both;
+}
+
+.animate-fade-up-delayed-3 {
+  animation: fade-up 0.6s ease-out 0.3s both;
+}
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -209,4 +255,67 @@ body {
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 240, 255, 0.3);
   border-radius: 999px;
+}
+
+/* Mobile phones: disable only GPU-heavy effects */
+@media (max-width: 768px) and (pointer: coarse) {
+  .scanlines::before {
+    display: none;
+  }
+
+  .fx-canvas,
+  .fx-blur-heavy {
+    display: none !important;
+  }
+
+  .fx-blur-heavy {
+    filter: none !important;
+    -webkit-filter: none !important;
+  }
+
+  .btn-neon-border:not(:disabled) {
+    animation: btn-pulse-glow 3s ease-in-out infinite;
+    border: 1px solid rgba(0, 240, 255, 0.28);
+  }
+
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-xl {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanlines::before,
+  .glitch-text .glitch-layer,
+  .btn-shimmer::after {
+    display: none;
+  }
+
+  .fx-canvas,
+  .fx-blur-heavy,
+  .animate-orb-breathe,
+  .css-wave-bar,
+  .animate-spin-slow,
+  .animate-spin-reverse,
+  .animate-pulse {
+    animation: none !important;
+  }
+}
+
+html[data-lite-mode="true"] .scanlines::before {
+  display: none;
+}
+
+html[data-lite-mode="true"] .fx-canvas,
+html[data-lite-mode="true"] .fx-blur-heavy {
+  display: none !important;
+}
+
+html[data-lite-mode="true"] .backdrop-blur-sm,
+html[data-lite-mode="true"] .backdrop-blur-md,
+html[data-lite-mode="true"] .backdrop-blur-xl {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }

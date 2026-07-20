@@ -1,4 +1,4 @@
-import { extractYouTubeVideoId } from "@/lib/download/youtube";
+import { extractYouTubeVideoId } from "@/lib/download/youtube-id";
 
 export type Platform = "youtube" | "soundcloud" | "spotify";
 export type OutputFormat = "mp3" | "wav";

@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { ToolPageShell } from "@/components/tools/tool-page-shell";
 import { ToolHeader } from "@/components/tools/tool-header";
 import { ToolPanel } from "@/components/tools/tool-panel";
-import { DownloaderForm } from "@/components/tools/downloader-form";
+import { DownloaderClient } from "@/components/tools/downloader-client";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -24,7 +24,7 @@ export default async function DownloaderPage({ params }: Props) {
           code="// MODULE · DL_01"
         />
         <ToolPanel>
-          <DownloaderForm />
+          <DownloaderClient />
         </ToolPanel>
       </div>
     </ToolPageShell>

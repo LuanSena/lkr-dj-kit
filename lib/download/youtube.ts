@@ -1,44 +1,27 @@
 import { Innertube } from "youtubei.js";
+import { extractYouTubeVideoId } from "@/lib/download/youtube-id";
 
-const YT_CLIENTS = ["IOS", "ANDROID_VR"] as const;
+export { extractYouTubeVideoId };
+
+const YT_CLIENTS = [
+  "IOS",
+  "ANDROID_VR",
+  "ANDROID",
+  "TV_EMBEDDED",
+  "WEB_EMBEDDED",
+  "WEB",
+] as const;
 type YouTubeClient = (typeof YT_CLIENTS)[number];
 
 let ytInstance: Innertube | null = null;
 
 async function getYouTubeClient() {
   if (!ytInstance) {
-    ytInstance = await Innertube.create();
+    ytInstance = await Innertube.create({
+      generate_session_locally: true,
+    });
   }
   return ytInstance;
-}
-
-export function extractYouTubeVideoId(url: string): string | null {
-  const trimmed = url.trim();
-
-  try {
-    const parsed = new URL(trimmed);
-    const host = parsed.hostname.replace(/^www\./, "");
-
-    if (host === "youtu.be") {
-      const id = parsed.pathname.split("/").filter(Boolean)[0];
-      return id || null;
-    }
-
-    if (host === "youtube.com" || host === "m.youtube.com") {
-      if (parsed.pathname.startsWith("/watch")) {
-        return parsed.searchParams.get("v");
-      }
-
-      const parts = parsed.pathname.split("/").filter(Boolean);
-      if (parts[0] === "shorts" || parts[0] === "embed") {
-        return parts[1] || null;
-      }
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
 }
 
 function getExtensionFromMime(mimeType: string): string {
@@ -48,31 +31,43 @@ function getExtensionFromMime(mimeType: string): string {
   return "audio";
 }
 
-function getBestAudioFormat(
-  info: Awaited<ReturnType<Innertube["getInfo"]>>
-) {
-  return (
-    info.streaming_data?.adaptive_formats
-      ?.filter((format) => format.has_audio && !format.has_video)
-      .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0))[0] ?? null
-  );
-}
+function getAudioFormats(info: Awaited<ReturnType<Innertube["getInfo"]>>) {
+  const formats = info.streaming_data?.adaptive_formats ?? [];
+  const audioOnly = formats
+    .filter((format) => format.has_audio && !format.has_video)
+    .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
 
-async function downloadAudioForClient(
-  info: Awaited<ReturnType<Innertube["getInfo"]>>,
-  client: YouTubeClient
-) {
-  const format = getBestAudioFormat(info);
-  if (!format) {
-    throw new Error("No audio formats available");
+  if (audioOnly.length) {
+    return audioOnly;
   }
 
-  const stream = await info.download({
-    type: "audio",
-    itag: format.itag,
-    client,
-  });
+  return formats
+    .filter((format) => format.has_audio)
+    .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
+}
 
+function wrapReadableStream(stream: ReadableStream<Uint8Array>) {
+  const reader = stream.getReader();
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      const { done, value } = await reader.read();
+      if (done) {
+        reader.releaseLock();
+        controller.close();
+        return;
+      }
+      if (value) {
+        controller.enqueue(value);
+      }
+    },
+    cancel() {
+      reader.releaseLock();
+    },
+  });
+}
+
+async function verifyStream(stream: ReadableStream<Uint8Array>) {
   const reader = stream.getReader();
   const first = await reader.read();
 
@@ -81,12 +76,12 @@ async function downloadAudioForClient(
     throw new Error("Empty audio stream");
   }
 
-  let released = false;
-  const replayableStream = new ReadableStream<Uint8Array>({
+  let primed = false;
+  return new ReadableStream<Uint8Array>({
     async pull(controller) {
-      if (!released) {
+      if (!primed) {
         controller.enqueue(first.value!);
-        released = true;
+        primed = true;
         return;
       }
 
@@ -96,7 +91,6 @@ async function downloadAudioForClient(
         controller.close();
         return;
       }
-
       if (value) {
         controller.enqueue(value);
       }
@@ -105,32 +99,73 @@ async function downloadAudioForClient(
       reader.releaseLock();
     },
   });
-
-  return {
-    stream: replayableStream,
-    mimeType: format.mime_type.split(";")[0],
-  };
 }
 
-async function resolveYouTubeAudioStream(
-  infoByClient: Array<{
-    client: YouTubeClient;
-    info: Awaited<ReturnType<Innertube["getInfo"]>>;
-  }>
+function getMimeFromFormat(format?: { mime_type?: string } | null) {
+  return format?.mime_type?.split(";")[0] ?? "audio/mp4";
+}
+
+async function downloadWithOptions(
+  info: Awaited<ReturnType<Innertube["getInfo"]>>,
+  client: YouTubeClient,
+  options: { itag?: number; quality?: string }
 ) {
+  const stream = await info.download({
+    type: "audio",
+    client,
+    ...options,
+  });
+
+  return verifyStream(stream);
+}
+
+async function downloadAudioForClient(
+  info: Awaited<ReturnType<Innertube["getInfo"]>>,
+  client: YouTubeClient,
+  yt: Innertube
+) {
+  const audioFormats = getAudioFormats(info);
   const errors: string[] = [];
 
-  for (const { client, info } of infoByClient) {
+  const attempts: Array<{ itag?: number; quality?: string }> = [
+    { quality: "best" },
+    ...audioFormats.map((format) => ({ itag: format.itag })),
+  ];
+
+  for (const attempt of attempts) {
     try {
-      return await downloadAudioForClient(info, client);
+      const stream = await downloadWithOptions(info, client, attempt);
+      const format =
+        audioFormats.find((item) => item.itag === attempt.itag) ?? audioFormats[0];
+      return {
+        stream,
+        mimeType: getMimeFromFormat(format),
+      };
     } catch (error) {
-      errors.push(
-        error instanceof Error ? error.message : "Unknown download error"
-      );
+      errors.push(error instanceof Error ? error.message : "Download failed");
     }
   }
 
-  throw new Error(errors[0] || "Could not download audio from YouTube");
+  for (const format of audioFormats) {
+    try {
+      const url = await format.decipher(yt.session.player);
+      if (!url) continue;
+
+      const response = await fetch(url);
+      if (!response.ok || !response.body) {
+        throw new Error(`Stream fetch failed (${response.status})`);
+      }
+
+      return {
+        stream: wrapReadableStream(response.body),
+        mimeType: getMimeFromFormat(format),
+      };
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : "Direct fetch failed");
+    }
+  }
+
+  throw new Error(errors[0] || "No audio formats available");
 }
 
 export async function getYouTubeStream(url: string) {
@@ -140,33 +175,26 @@ export async function getYouTubeStream(url: string) {
   }
 
   const yt = await getYouTubeClient();
-  const infoByClient: Array<{
-    client: YouTubeClient;
-    info: Awaited<ReturnType<Innertube["getInfo"]>>;
-  }> = [];
+  const errors: string[] = [];
+  let title = "track";
 
   for (const client of YT_CLIENTS) {
     try {
       const info = await yt.getInfo(videoId, { client });
-      infoByClient.push({ client, info });
-    } catch {
-      continue;
+      title = info.basic_info.title || title;
+      const result = await downloadAudioForClient(info, client, yt);
+      return {
+        stream: result.stream,
+        title,
+        contentType: result.mimeType,
+        extension: getExtensionFromMime(result.mimeType),
+      };
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : "Download failed");
     }
   }
 
-  if (!infoByClient.length) {
-    throw new Error("Could not fetch video info");
-  }
-
-  const title = infoByClient[0].info.basic_info.title || "track";
-  const { stream, mimeType } = await resolveYouTubeAudioStream(infoByClient);
-
-  return {
-    stream,
-    title,
-    contentType: mimeType,
-    extension: getExtensionFromMime(mimeType),
-  };
+  throw new Error(errors[0] || "Could not download audio from YouTube");
 }
 
 export async function searchYouTube(query: string, limit = 3): Promise<string[]> {

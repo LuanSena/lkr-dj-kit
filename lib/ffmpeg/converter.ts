@@ -4,31 +4,50 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
 let ffmpeg: FFmpeg | null = null;
+let ffmpegLoadPromise: Promise<FFmpeg> | null = null;
+
+const FFMPEG_BASE_URL = `/ffmpeg`;
 
 export async function loadFFmpeg(
   onProgress?: (progress: number) => void
 ): Promise<FFmpeg> {
   if (ffmpeg?.loaded) return ffmpeg;
+  if (ffmpegLoadPromise) return ffmpegLoadPromise;
 
-  ffmpeg = new FFmpeg();
+  ffmpegLoadPromise = (async () => {
+    const instance = new FFmpeg();
 
-  if (onProgress) {
-    ffmpeg.on("progress", ({ progress }) => {
-      onProgress(Math.round(progress * 100));
+    if (onProgress) {
+      instance.on("progress", ({ progress }) => {
+        onProgress(Math.round(progress * 100));
+      });
+    }
+
+    instance.on("log", ({ message }) => {
+      if (message.toLowerCase().includes("error")) {
+        console.error("[ffmpeg]", message);
+      }
     });
+
+    await instance.load({
+      coreURL: await toBlobURL(`${FFMPEG_BASE_URL}/ffmpeg-core.js`, "text/javascript"),
+      wasmURL: await toBlobURL(`${FFMPEG_BASE_URL}/ffmpeg-core.wasm`, "application/wasm"),
+    });
+
+    ffmpeg = instance;
+    return instance;
+  })();
+
+  try {
+    return await ffmpegLoadPromise;
+  } catch (error) {
+    ffmpegLoadPromise = null;
+    ffmpeg = null;
+    throw error;
   }
-
-  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
-
-  await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-  });
-
-  return ffmpeg;
 }
 
-const SUPPORTED_EXTENSIONS = [".flac", ".m4a", ".mp3", ".aac", ".webm"];
+const SUPPORTED_EXTENSIONS = [".flac", ".m4a", ".mp3", ".aac", ".webm", ".wav"];
 
 export function isSupportedFormat(filename: string): boolean {
   const ext = filename.toLowerCase().slice(filename.lastIndexOf("."));
@@ -36,7 +55,8 @@ export function isSupportedFormat(filename: string): boolean {
 }
 
 function getExtension(filename: string): string {
-  return filename.slice(filename.lastIndexOf(".")).toLowerCase();
+  const ext = filename.slice(filename.lastIndexOf(".")).toLowerCase();
+  return ext || ".audio";
 }
 
 function toArrayBuffer(data: Uint8Array | string): ArrayBuffer {
@@ -62,9 +82,17 @@ async function transcodeAudio(
   const inputBytes = await fetchFile(file);
 
   await ff.writeFile(inputName, inputBytes);
-  await ff.exec(["-i", inputName, ...args, outputName]);
+
+  const exitCode = await ff.exec(["-y", "-i", inputName, ...args, outputName]);
+  if (exitCode !== 0) {
+    throw new Error(`FFmpeg exited with code ${exitCode}`);
+  }
 
   const data = await ff.readFile(outputName);
+  if (!data || (data instanceof Uint8Array && data.length === 0)) {
+    throw new Error("FFmpeg produced an empty output file");
+  }
+
   const buffer = toArrayBuffer(
     data instanceof Uint8Array ? data : (data as string)
   );
@@ -84,7 +112,7 @@ export async function convertToWav(
     file,
     inputName,
     "output.wav",
-    ["-c:a", "pcm_s16le"],
+    ["-vn", "-acodec", "pcm_s16le", "-ar", "44100", "-f", "wav"],
     "audio/wav",
     onProgress
   );
@@ -100,7 +128,7 @@ export async function convertBlobToWav(
     blob,
     inputName,
     "output.wav",
-    ["-c:a", "pcm_s16le"],
+    ["-vn", "-acodec", "pcm_s16le", "-ar", "44100", "-f", "wav"],
     "audio/wav",
     onProgress
   );
@@ -111,17 +139,30 @@ export async function convertBlobToMp3(
   extension: string,
   onProgress?: (progress: number) => void
 ): Promise<Blob> {
-  if (extension === "mp3" || extension === ".mp3") {
+  const normalized = extension.replace(/^\./, "").toLowerCase();
+  if (normalized === "mp3") {
     return blob;
   }
 
-  const inputName = `input${extension.startsWith(".") ? extension : `.${extension}`}`;
-  return transcodeAudio(
-    blob,
-    inputName,
-    "output.mp3",
-    ["-codec:a", "libmp3lame", "-b:a", "320k"],
-    "audio/mpeg",
-    onProgress
-  );
+  const inputName = `input.${normalized}`;
+
+  try {
+    return await transcodeAudio(
+      blob,
+      inputName,
+      "output.m4a",
+      ["-vn", "-c:a", "aac", "-b:a", "256k"],
+      "audio/mp4",
+      onProgress
+    );
+  } catch {
+    return transcodeAudio(
+      blob,
+      inputName,
+      "output.mp3",
+      ["-vn", "-c:a", "libmp3lame", "-b:a", "320k"],
+      "audio/mpeg",
+      onProgress
+    );
+  }
 }
