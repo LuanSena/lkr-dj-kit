@@ -1,7 +1,21 @@
 {
   "name": "lkr-dj-kit",
   "version": "0.1.0",
+  "description": "Ferramentas para DJs: ripar música, converter áudio lossless e utilitários Rekordbox.",
   "private": true,
+  "author": "Luan Sena",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuanSena/lkr-dj-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LuanSena/lkr-dj-kit/issues"
+  },
+  "homepage": "https://github.com/LuanSena/lkr-dj-kit#readme",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,9 +23,21 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.25.0",
     "next": "16.2.10",
+    "next-intl": "^4.13.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-dropzone": "^19.1.1",
+    "sonner": "^2.0.7",
+    "soundcloud-scraper": "^5.0.3",
+    "tailwind-merge": "^3.6.0",
+    "youtubei.js": "^17.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

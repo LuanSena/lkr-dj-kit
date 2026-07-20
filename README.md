@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LKR DJ TOOLs
 
-## Getting Started
+[![CI](https://github.com/LuanSena/lkr-dj-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/LuanSena/lkr-dj-kit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-First, run the development server:
+Ferramentas modernas para DJs — landing page e utilitários para ripar música, converter áudio lossless e análise Rekordbox (em breve).
+
+## Funcionalidades
+
+- **Landing page** com visual cyber/tech, animações e design responsivo
+- **Ripar Música** — YouTube, SoundCloud e Spotify (via match no YouTube)
+- **Conversor** — FLAC, M4A, MP3 e AAC para WAV lossless (100% no browser com ffmpeg.wasm)
+- **Rekordbox Analyzer** — teaser com roadmap (em desenvolvimento)
+- **i18n** — Português (BR) e Inglês
+
+## Stack
+
+- [Next.js 16](https://nextjs.org/) (App Router)
+- TypeScript
+- Tailwind CSS v4
+- Framer Motion
+- [next-intl](https://next-intl.dev/)
+- [ffmpeg.wasm](https://ffmpegwasm.netlify.app/)
+- [youtubei.js](https://github.com/LuanRT/YouTube.js) — download do YouTube
+- soundcloud-scraper — client id do SoundCloud
+
+## Requisitos
+
+- Node.js 20+
+- npm 10+
+
+## Desenvolvimento
 
 ```bash
+git clone git@github.com:LuanSena/lkr-dj-kit.git
+cd lkr-dj-kit
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000) — redireciona automaticamente para `/pt`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando        | Descrição              |
+| -------------- | ---------------------- |
+| `npm run dev`  | Servidor de desenvolvimento |
+| `npm run build`| Build de produção      |
+| `npm run start`| Servidor de produção   |
+| `npm run lint` | ESLint                 |
 
-## Learn More
+## Deploy na Vercel
 
-To learn more about Next.js, take a look at the following resources:
+1. Conecte o repositório [LuanSena/lkr-dj-kit](https://github.com/LuanSena/lkr-dj-kit) na Vercel
+2. Framework preset: **Next.js**
+3. Deploy — nenhuma variável de ambiente obrigatória
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+As rotas de download usam `maxDuration: 300` configurado em `vercel.json`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Aviso legal
 
-## Deploy on Vercel
+Use apenas para conteúdo que você tem direito de baixar. O LKR DJ TOOLs não armazena arquivos nem dados pessoais.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Estrutura
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  [locale]/           # Páginas com i18n
+  api/download/       # API routes com streaming
+components/
+  landing/            # Hero, Footer, animações
+  tools/              # Downloader, Converter
+  animations/         # SVGs e canvas animados
+lib/
+  download/           # YouTube, SoundCloud, Spotify
+  ffmpeg/             # Wrapper ffmpeg.wasm
+messages/
+  pt.json / en.json   # Traduções
+```
+
+## Licença
+
+[MIT](LICENSE) © Luan Sena

@@ -1,0 +1,135 @@
+{
+  "metadata": {
+    "title": "LKR DJ TOOLs — Tools for DJs",
+    "description": "Download music, convert lossless audio, and organize your set. Modern DJ tools with no database."
+  },
+  "nav": {
+    "tools": "Tools",
+    "features": "Features",
+    "howItWorks": "How it works",
+    "getStarted": "Get started"
+  },
+  "hero": {
+    "badge": "Tools for DJs",
+    "title": "LKR DJ TOOL",
+    "ctaDownload": "Rip Music",
+    "ctaConvert": "Convert audio"
+  },
+  "tools": {
+    "sectionTitle": "Tools",
+    "sectionSubtitle": "Everything you need to prepare your set",
+    "downloader": {
+      "title": "Downloader",
+      "description": "Download audio from YouTube, SoundCloud and Spotify in high quality.",
+      "cta": "Open tool"
+    },
+    "converter": {
+      "title": "Converter",
+      "description": "Convert FLAC and M4A to lossless WAV, 100% on your device.",
+      "cta": "Open tool"
+    },
+    "rekordbox": {
+      "title": "Rekordbox Analyzer",
+      "description": "XML analysis to suggest set structures and crate organization.",
+      "cta": "View roadmap",
+      "badge": "Coming soon"
+    }
+  },
+  "features": {
+    "sectionTitle": "Why use LKR DJ TOOLs?",
+    "privacy": {
+      "title": "Total privacy",
+      "description": "Conversions run in your browser. No files stored on servers."
+    },
+    "lossless": {
+      "title": "Lossless quality",
+      "description": "FLAC/M4A to WAV conversion without unnecessary recompression."
+    },
+    "noDatabase": {
+      "title": "No database",
+      "description": "Serverless architecture on Vercel. Zero data persistence."
+    },
+    "mobile": {
+      "title": "Mobile-first",
+      "description": "Responsive interface optimized for desktop and mobile."
+    }
+  },
+  "howItWorks": {
+    "sectionTitle": "How it works",
+    "step1": {
+      "title": "Choose a tool",
+      "description": "Downloader, converter or Rekordbox analyzer."
+    },
+    "step2": {
+      "title": "Paste or drag",
+      "description": "Music URL or audio file in supported format."
+    },
+    "step3": {
+      "title": "Download the result",
+      "description": "Get the file ready for your set."
+    }
+  },
+  "footer": {
+    "disclaimer": "Use only for content you have the right to download. LKR DJ TOOLs does not store files or personal data.",
+    "madeWith": "Made for DJs"
+  },
+  "downloader": {
+    "title": "Music Downloader",
+    "subtitle": "Download high-quality audio from major platforms",
+    "tabs": {
+      "youtube": "YouTube",
+      "soundcloud": "SoundCloud",
+      "spotify": "Spotify"
+    },
+    "urlPlaceholder": "Paste the music URL here...",
+    "format": "Output format",
+    "formatMp3": "MP3 320kbps",
+    "formatWav": "WAV",
+    "download": "Download",
+    "downloading": "Downloading...",
+    "converting": "Converting...",
+    "spotifyWarning": "Spotify does not allow direct downloads. We automatically find the equivalent track on YouTube.",
+    "errors": {
+      "invalidUrl": "Invalid URL for this platform",
+      "failed": "Download failed. Try again or use another URL.",
+      "noMatch": "Could not find a YouTube match. Try pasting the YouTube link directly."
+    }
+  },
+  "converter": {
+    "title": "Audio Converter",
+    "subtitle": "Convert FLAC and M4A to lossless WAV — 100% on your device",
+    "dropzone": "Drag files here or click to select",
+    "dropzoneHint": "Supports FLAC, M4A, MP3 and AAC",
+    "convert": "Convert to WAV",
+    "converting": "Converting...",
+    "download": "Download WAV",
+    "loadingEngine": "Loading conversion engine...",
+    "mobileWarning": "Local conversion may take longer on mobile devices. Large files (>100MB) may not be supported.",
+    "success": "Conversion complete!",
+    "errors": {
+      "unsupported": "Unsupported format",
+      "failed": "Conversion failed. Try another file."
+    }
+  },
+  "rekordbox": {
+    "title": "Rekordbox Analyzer",
+    "subtitle": "Coming soon: intelligent XML analysis",
+    "badge": "In development",
+    "description": "We're building a tool to analyze Rekordbox XML exports and suggest set structures, crate organization, and library insights.",
+    "roadmap": {
+      "title": "Roadmap",
+      "xml": "Rekordbox XML parser",
+      "structure": "Set structure suggestions",
+      "crates": "Smart crate organization",
+      "bpm": "BPM and key compatibility analysis"
+    },
+    "notify": "Want to be notified when it launches?",
+    "notifyCta": "Get in touch",
+    "backHome": "Back to home"
+  },
+  "common": {
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error"
+  }
+}
