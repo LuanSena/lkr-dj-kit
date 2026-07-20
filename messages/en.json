@@ -89,6 +89,7 @@
     "downloading": "Downloading...",
     "converting": "Converting...",
     "spotifyWarning": "Spotify does not allow direct downloads. We automatically find the equivalent track on YouTube.",
+    "youtubeLocal": "YouTube is processed in your browser (not on the server) to avoid platform blocks.",
     "errors": {
       "invalidUrl": "Invalid URL for this platform",
       "failed": "Download failed. Try again or use another URL.",

@@ -39,37 +39,51 @@ export function DownloaderForm() {
     setProgress(10);
 
     try {
-      const response = await fetch(getApiEndpoint(platform), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, format }),
-      });
+      let blob: Blob;
+      let baseName: string;
+      let sourceExtension: string;
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        const message = data.error || t("errors.failed");
-        if (message.includes("YouTube match") || message.includes("No YouTube")) {
-          setError(t("errors.noMatch"));
-        } else if (message.toLowerCase().includes("login required")) {
-          setError(t("errors.youtubeBlocked"));
-        } else {
-          setError(message);
+      if (platform === "youtube") {
+        setProgress(15);
+        const { downloadYouTubeInBrowser } = await import("@/lib/download/youtube-browser");
+        const result = await downloadYouTubeInBrowser(url, setProgress);
+        blob = result.blob;
+        baseName = sanitizeFilename(result.title);
+        sourceExtension = result.extension;
+      } else {
+        const response = await fetch(getApiEndpoint(platform), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, format }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          const message = data.error || t("errors.failed");
+          if (message.includes("YouTube match") || message.includes("No YouTube")) {
+            setError(t("errors.noMatch"));
+          } else if (message.toLowerCase().includes("login required")) {
+            setError(t("errors.youtubeBlocked"));
+          } else {
+            setError(message);
+          }
+          return;
         }
-        return;
+
+        setProgress(50);
+
+        const contentDisposition = response.headers.get("Content-Disposition");
+        const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+        const rawFilename = filenameMatch?.[1] || "track.audio";
+        baseName = sanitizeFilename(rawFilename.replace(/\.[^.]+$/, ""));
+        sourceExtension =
+          response.headers.get("X-Audio-Extension") ||
+          rawFilename.slice(rawFilename.lastIndexOf(".") + 1) ||
+          "m4a";
+
+        blob = await response.blob();
       }
 
-      setProgress(50);
-
-      const contentDisposition = response.headers.get("Content-Disposition");
-      const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
-      const rawFilename = filenameMatch?.[1] || "track.audio";
-      const baseName = sanitizeFilename(rawFilename.replace(/\.[^.]+$/, ""));
-      const sourceExtension =
-        response.headers.get("X-Audio-Extension") ||
-        rawFilename.slice(rawFilename.lastIndexOf(".") + 1) ||
-        "m4a";
-
-      let blob = await response.blob();
       let outputExtension = sourceExtension;
 
       const needsConversion =
@@ -115,8 +129,13 @@ export function DownloaderForm() {
       URL.revokeObjectURL(blobUrl);
 
       setProgress(100);
-    } catch {
-      setError(t("errors.failed"));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t("errors.failed");
+      if (message.toLowerCase().includes("login required")) {
+        setError(t("errors.youtubeBlocked"));
+      } else {
+        setError(t("errors.failed"));
+      }
     } finally {
       setLoading(false);
       setConverting(false);
@@ -146,6 +165,13 @@ export function DownloaderForm() {
           </button>
         ))}
       </div>
+
+      {platform === "youtube" && (
+        <div className="flex items-start gap-2 border border-cyan-500/20 bg-cyan-500/5 p-4 font-mono-tech text-xs text-cyan-300/70">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
+          {t("youtubeLocal")}
+        </div>
+      )}
 
       {platform === "spotify" && (
         <div className="flex items-start gap-2 border border-cyan-500/20 bg-cyan-500/5 p-4 font-mono-tech text-xs text-cyan-300/70">

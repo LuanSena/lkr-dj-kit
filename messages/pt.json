@@ -89,6 +89,7 @@
     "downloading": "Baixando...",
     "converting": "Convertendo...",
     "spotifyWarning": "O Spotify não permite download direto. Buscamos a faixa equivalente no YouTube automaticamente.",
+    "youtubeLocal": "YouTube é processado no seu navegador (não no servidor), para evitar bloqueios da plataforma.",
     "errors": {
       "invalidUrl": "URL inválida para esta plataforma",
       "failed": "Falha ao baixar. Tente novamente ou use outra URL.",
