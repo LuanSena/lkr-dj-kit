@@ -6,8 +6,8 @@ import { getBrowserContentPoToken, getBrowserPoContext } from "@/lib/download/yo
 import { fetchAudioStream } from "@/lib/download/youtube-stream";
 import type { Innertube } from "youtubei.js";
 
-const FAST_CLIENTS = ["ANDROID_VR", "IOS", "ANDROID"] as const;
-const PO_CLIENTS = ["MWEB", "WEB", "IOS"] as const;
+const FAST_CLIENTS = ["IOS", "ANDROID_VR", "ANDROID", "TV_EMBEDDED", "WEB_EMBEDDED"] as const;
+const PO_CLIENTS = ["MWEB", "WEB", "IOS", "ANDROID"] as const;
 
 type YouTubeClient = (typeof FAST_CLIENTS)[number] | (typeof PO_CLIENTS)[number];
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Download, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -26,6 +26,14 @@ export function DownloaderForm() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (platform !== "youtube") return;
+
+    import("@/lib/download/youtube-browser-po")
+      .then(({ getBrowserPoContext }) => getBrowserPoContext())
+      .catch(() => {});
+  }, [platform]);
+
   const handleDownload = async () => {
     setError("");
 
@@ -46,10 +54,35 @@ export function DownloaderForm() {
       if (platform === "youtube") {
         setProgress(15);
         const { downloadYouTubeInBrowser } = await import("@/lib/download/youtube-browser");
-        const result = await downloadYouTubeInBrowser(url, setProgress);
-        blob = result.blob;
-        baseName = sanitizeFilename(result.title);
-        sourceExtension = result.extension;
+
+        try {
+          const result = await downloadYouTubeInBrowser(url, setProgress);
+          blob = result.blob;
+          baseName = sanitizeFilename(result.title);
+          sourceExtension = result.extension;
+        } catch (clientError) {
+          setProgress(25);
+          const response = await fetch(getApiEndpoint("youtube"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url, format }),
+          });
+
+          if (!response.ok) {
+            throw clientError;
+          }
+
+          setProgress(50);
+          const contentDisposition = response.headers.get("Content-Disposition");
+          const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+          const rawFilename = filenameMatch?.[1] || "track.audio";
+          baseName = sanitizeFilename(rawFilename.replace(/\.[^.]+$/, ""));
+          sourceExtension =
+            response.headers.get("X-Audio-Extension") ||
+            rawFilename.slice(rawFilename.lastIndexOf(".") + 1) ||
+            "m4a";
+          blob = await response.blob();
+        }
       } else {
         const response = await fetch(getApiEndpoint(platform), {
           method: "POST",
