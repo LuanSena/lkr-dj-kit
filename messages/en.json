@@ -110,7 +110,8 @@
     "success": "Conversion complete!",
     "errors": {
       "unsupported": "Unsupported format",
-      "failed": "Conversion failed. Try another file."
+      "failed": "Conversion failed. Try another file.",
+      "engine": "Could not load the conversion engine. Reload the page and try again."
     }
   },
   "rekordbox": {

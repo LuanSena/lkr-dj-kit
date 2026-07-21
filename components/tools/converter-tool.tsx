@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
 import { Upload, Download, AlertCircle, CheckCircle2, FileAudio } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { NeonButton } from "@/components/ui/neon-button";
-import { convertToWav, isSupportedFormat } from "@/lib/ffmpeg/converter";
+import { isSupportedFormat } from "@/lib/ffmpeg/converter";
 import { cn } from "@/lib/utils";
 
 export function ConverterTool() {
@@ -18,6 +18,24 @@ export function ConverterTool() {
   const [error, setError] = useState("");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    import("@/lib/ffmpeg/converter")
+      .then(({ loadFFmpeg }) => {
+        if (active) {
+          return loadFFmpeg();
+        }
+      })
+      .catch((error) => {
+        console.error("FFmpeg preload failed:", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -46,6 +64,7 @@ export function ConverterTool() {
       "audio/mp4": [".m4a"],
       "audio/mpeg": [".mp3"],
       "audio/aac": [".aac"],
+      "audio/webm": [".webm"],
     },
     maxFiles: 1,
     disabled: loading,
@@ -61,13 +80,24 @@ export function ConverterTool() {
     setProgress(0);
 
     try {
+      const { convertToWav } = await import("@/lib/ffmpeg/converter");
       const blob = await convertToWav(file, setProgress);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setSuccess(true);
     } catch (error) {
       console.error("Conversion error:", error);
-      setError(t("errors.failed"));
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      if (
+        message.includes("not loaded") ||
+        message.includes("failed to fetch") ||
+        message.includes("404") ||
+        message.includes("worker")
+      ) {
+        setError(t("errors.engine"));
+      } else {
+        setError(t("errors.failed"));
+      }
     } finally {
       setLoading(false);
       setLoadingEngine(false);

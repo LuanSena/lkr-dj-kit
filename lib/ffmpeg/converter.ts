@@ -6,7 +6,14 @@ import { fetchFile, toBlobURL } from "@ffmpeg/util";
 let ffmpeg: FFmpeg | null = null;
 let ffmpegLoadPromise: Promise<FFmpeg> | null = null;
 
-const FFMPEG_BASE_URL = `/ffmpeg`;
+const FFMPEG_BASE_URL = "/ffmpeg";
+
+function getAssetUrl(path: string) {
+  if (typeof window === "undefined") {
+    return path;
+  }
+  return new URL(path, window.location.origin).href;
+}
 
 export async function loadFFmpeg(
   onProgress?: (progress: number) => void
@@ -29,9 +36,15 @@ export async function loadFFmpeg(
       }
     });
 
+    const [coreURL, wasmURL] = await Promise.all([
+      toBlobURL(getAssetUrl(`${FFMPEG_BASE_URL}/ffmpeg-core.js`), "text/javascript"),
+      toBlobURL(getAssetUrl(`${FFMPEG_BASE_URL}/ffmpeg-core.wasm`), "application/wasm"),
+    ]);
+
     await instance.load({
-      coreURL: await toBlobURL(`${FFMPEG_BASE_URL}/ffmpeg-core.js`, "text/javascript"),
-      wasmURL: await toBlobURL(`${FFMPEG_BASE_URL}/ffmpeg-core.wasm`, "application/wasm"),
+      classWorkerURL: getAssetUrl(`${FFMPEG_BASE_URL}/worker/worker.js`),
+      coreURL,
+      wasmURL,
     });
 
     ffmpeg = instance;
@@ -83,8 +96,8 @@ async function transcodeAudio(
 
   await ff.writeFile(inputName, inputBytes);
 
-  const exitCode = await ff.exec(["-y", "-i", inputName, ...args, outputName]);
-  if (exitCode !== 0) {
+  const exitCode = await ff.exec(["-i", inputName, ...args, outputName]);
+  if (typeof exitCode === "number" && exitCode !== 0) {
     throw new Error(`FFmpeg exited with code ${exitCode}`);
   }
 
@@ -112,7 +125,7 @@ export async function convertToWav(
     file,
     inputName,
     "output.wav",
-    ["-vn", "-acodec", "pcm_s16le", "-ar", "44100", "-f", "wav"],
+    ["-vn", "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "2", "-f", "wav"],
     "audio/wav",
     onProgress
   );
@@ -128,7 +141,7 @@ export async function convertBlobToWav(
     blob,
     inputName,
     "output.wav",
-    ["-vn", "-acodec", "pcm_s16le", "-ar", "44100", "-f", "wav"],
+    ["-vn", "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "2", "-f", "wav"],
     "audio/wav",
     onProgress
   );
