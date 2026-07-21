@@ -131,7 +131,10 @@ export function DownloaderForm() {
       setProgress(100);
     } catch (error) {
       const message = error instanceof Error ? error.message : t("errors.failed");
-      if (message.toLowerCase().includes("login required")) {
+      if (
+        message.toLowerCase().includes("login required") ||
+        message.includes("403")
+      ) {
         setError(t("errors.youtubeBlocked"));
       } else {
         setError(t("errors.failed"));
