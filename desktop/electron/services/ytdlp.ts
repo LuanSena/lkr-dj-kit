@@ -105,11 +105,15 @@ export function runYtDlp(
   });
 }
 
-export async function getVideoInfo(url: string): Promise<{ title?: string }> {
+export async function getVideoInfo(
+  url: string,
+  extraArgs: string[] = []
+): Promise<{ title?: string }> {
   const output = await runYtDlp([
     "--dump-single-json",
     "--no-playlist",
     "--skip-download",
+    ...extraArgs,
     url,
   ]);
 

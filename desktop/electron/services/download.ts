@@ -22,6 +22,38 @@ function detectPlatform(url: string): "youtube" | "soundcloud" | "spotify" | "un
   return "unknown";
 }
 
+// Browsers we try to borrow cookies from when YouTube demands a login.
+// Order matters: put the most common first. yt-dlp fails fast when a browser
+// isn't installed, so trying several is cheap.
+const COOKIE_BROWSERS = ["chrome", "edge", "brave", "firefox", "opera", "vivaldi", "chromium"];
+
+function isLoginWall(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes("sign in to confirm") ||
+    m.includes("confirm you") ||
+    m.includes("not a bot") ||
+    m.includes("--cookies") ||
+    m.includes("cookies-from-browser") ||
+    m.includes("login required") ||
+    m.includes("account") && m.includes("cookies")
+  );
+}
+
+// Errors that just mean "that browser has no usable cookies here" — we should
+// keep trying other browsers rather than give up.
+function isCookieSourceProblem(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes("could not find") && m.includes("cookies") ||
+    m.includes("could not copy") ||
+    m.includes("unable to open") ||
+    m.includes("dpapi") ||
+    m.includes("no such browser") ||
+    m.includes("not find") && m.includes("browser")
+  );
+}
+
 export async function downloadMedia(
   url: string,
   format: "mp3" | "wav",
@@ -61,31 +93,63 @@ export async function downloadMedia(
     args.push("--postprocessor-args", "ffmpeg:-acodec pcm_s16le");
   }
 
-  args.push(url);
-
   onProgress({ progress: 10, status: "downloading" });
 
   let title = "track";
   let outputPath = "";
 
+  const onLine = (line: string) => {
+    const pct = parseProgress(line);
+    if (pct !== null) {
+      onProgress({ progress: 10 + Math.round(pct * 0.75), status: "downloading" });
+    }
+    if (EXTRACT_RE.test(line)) {
+      onProgress({ progress: 90, status: "converting" });
+    }
+    const destMatch = line.match(/Destination:\s*(.+)/i);
+    if (destMatch?.[1]) {
+      outputPath = destMatch[1].trim();
+    }
+  };
+
+  // Build the list of attempts. First try without cookies. If YouTube throws a
+  // login wall, transparently retry borrowing cookies from installed browsers.
+  const cookieAttempts: string[][] =
+    platform === "youtube"
+      ? [[], ...COOKIE_BROWSERS.map((b) => ["--cookies-from-browser", b])]
+      : [[]];
+
+  let cookieArgs: string[] = [];
+
   try {
-    await runYtDlp(args, (line) => {
-      const pct = parseProgress(line);
-      if (pct !== null) {
-        onProgress({ progress: 10 + Math.round(pct * 0.75), status: "downloading" });
+    let lastError: Error | null = null;
+    let succeeded = false;
+
+    for (let i = 0; i < cookieAttempts.length; i++) {
+      cookieArgs = cookieAttempts[i];
+      try {
+        await runYtDlp([...args, ...cookieArgs, url], onLine);
+        succeeded = true;
+        break;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        lastError = err instanceof Error ? err : new Error(msg);
+        // If this browser simply has no cookies, keep trying the next one.
+        if (isCookieSourceProblem(msg)) continue;
+        // A login wall on the no-cookie attempt → move on to cookie attempts.
+        if (isLoginWall(msg) && i < cookieAttempts.length - 1) continue;
+        // Any other error: stop and surface it.
+        throw lastError;
       }
-      if (EXTRACT_RE.test(line)) {
-        onProgress({ progress: 90, status: "converting" });
-      }
-      const destMatch = line.match(/Destination:\s*(.+)/i);
-      if (destMatch?.[1]) {
-        outputPath = destMatch[1].trim();
-      }
-    });
+    }
+
+    if (!succeeded) {
+      throw lastError ?? new Error("Falha no download");
+    }
 
     onProgress({ progress: 95, status: "finalizing" });
 
-    const info = await getVideoInfo(url);
+    const info = await getVideoInfo(url, cookieArgs);
     if (info.title) {
       title = sanitizeFilename(info.title);
     }
@@ -123,6 +187,12 @@ export async function downloadMedia(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Falha no download";
+    if (platform === "youtube" && isLoginWall(message)) {
+      throw new Error(
+        "O YouTube pediu verificação de login para este vídeo. Abra o vídeo no seu navegador " +
+          "(Chrome, Edge ou Firefox) estando logado na sua conta do YouTube e tente novamente."
+      );
+    }
     if (message.toLowerCase().includes("private")) {
       throw new Error("Conteúdo privado ou indisponível.");
     }
