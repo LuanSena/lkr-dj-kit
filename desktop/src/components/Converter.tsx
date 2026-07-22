@@ -36,6 +36,7 @@ export function Converter({ locale }: ConverterProps) {
   const [successCount, setSuccessCount] = useState(0);
   const [failCount, setFailCount] = useState(0);
   const [done, setDone] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const api = getDesktopApi();
@@ -47,18 +48,52 @@ export function Converter({ locale }: ConverterProps) {
     });
   }, []);
 
+  const addPaths = (paths: string[]) => {
+    const valid = paths.filter((f) =>
+      SUPPORTED.includes(f.slice(f.lastIndexOf(".")).toLowerCase())
+    );
+    if (valid.length !== paths.length) {
+      setError(t(locale, "converter.errors.unsupported"));
+    }
+    if (valid.length) {
+      setFiles((prev) => [...new Set([...prev, ...valid])]);
+    }
+  };
+
   const addFiles = async () => {
     setError("");
     setDone(false);
     const selected = await getDesktopApi().selectAudioFiles();
     if (!selected.length) return;
+    addPaths(selected);
+  };
 
-    const valid = selected.filter((f) => SUPPORTED.includes(f.slice(f.lastIndexOf(".")).toLowerCase()));
-    if (valid.length !== selected.length) {
-      setError(t(locale, "converter.errors.unsupported"));
-    }
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (loading) return;
+    setError("");
+    setDone(false);
 
-    setFiles((prev) => [...new Set([...prev, ...valid])]);
+    const api = getDesktopApi();
+    const dropped = Array.from(e.dataTransfer.files);
+    const paths = dropped.map((file) => api.getPathForFile(file)).filter(Boolean);
+
+    if (!paths.length) return;
+    addPaths(paths);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
   };
 
   const removeFile = (path: string) => {
@@ -108,17 +143,25 @@ export function Converter({ locale }: ConverterProps) {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           onClick={addFiles}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragOver}
+          onDragLeave={handleDragLeave}
           disabled={loading}
           className={cn(
             "group flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 transition-all",
             "border-white/12 bg-black/20 hover:border-violet-400/45 hover:bg-violet-500/5",
+            isDragging && "border-cyan-400/70 bg-cyan-500/10 scale-[1.01]",
             loading && "pointer-events-none opacity-50"
           )}
         >
           <motion.div
             animate={{ y: [0, -4, 0] }}
             transition={{ duration: 2.5, repeat: Infinity }}
-            className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/15 to-violet-500/15"
+            className={cn(
+              "mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/15 to-violet-500/15 transition-transform",
+              isDragging && "scale-110"
+            )}
           >
             <Plus className="h-7 w-7 text-cyan-400/80 group-hover:text-cyan-300" />
           </motion.div>

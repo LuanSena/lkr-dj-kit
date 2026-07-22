@@ -1,6 +1,14 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 
 const api = {
+  // Resolve the absolute path of a File dropped from the OS (Electron 32+ removed File.path).
+  getPathForFile: (file: File): string => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch {
+      return "";
+    }
+  },
   getAppInfo: () => ipcRenderer.invoke("get-app-info"),
   checkTools: () => ipcRenderer.invoke("check-tools"),
   getOutputFolder: (): Promise<string> => ipcRenderer.invoke("get-output-folder"),

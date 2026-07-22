@@ -74,6 +74,7 @@ export const browserMock: DesktopApi = {
     "/Users/dj/Music/set/track-01.flac",
     "/Users/dj/Music/set/track-02.m4a",
   ],
+  getPathForFile: (file) => (file as File & { path?: string }).path ?? file.name,
   openOutputFolder: async () => "/Users/dj/Music/LKR DJ TOOLs",
   openFile: async () => true,
   openExternal: async (url) => {

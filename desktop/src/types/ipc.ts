@@ -65,6 +65,7 @@ export type DesktopApi = {
   getOutputFolder: () => Promise<string>;
   selectOutputFolder: () => Promise<string>;
   selectAudioFiles: () => Promise<string[]>;
+  getPathForFile: (file: File) => string;
   openOutputFolder: () => Promise<string>;
   openFile: (filePath: string) => Promise<boolean>;
   openExternal: (url: string) => Promise<boolean>;

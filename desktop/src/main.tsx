@@ -1,4 +1,4 @@
-import { StrictMode, useState } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Layout, type View } from "@/components/Layout";
 import { Home } from "@/components/Home";
@@ -15,6 +15,20 @@ installBrowserMockIfNeeded();
 function App() {
   const [view, setView] = useState<View>("home");
   const [locale, setLocale] = useState<Locale>("pt");
+
+  // Prevent the window from navigating to a file when it's dropped outside a
+  // dropzone (Electron/Chromium would otherwise "open" the file and blow up the app).
+  useEffect(() => {
+    const prevent = (e: DragEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("dragover", prevent);
+    window.addEventListener("drop", prevent);
+    return () => {
+      window.removeEventListener("dragover", prevent);
+      window.removeEventListener("drop", prevent);
+    };
+  }, []);
 
   return (
     <Layout locale={locale} setLocale={setLocale} view={view} setView={setView}>
