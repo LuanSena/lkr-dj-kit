@@ -1,0 +1,146 @@
+{
+  "app": {
+    "title": "LKR DJ TOOLs",
+    "subtitle": "Ferramentas para DJs"
+  },
+  "nav": {
+    "home": "Início",
+    "downloader": "Ripar Música",
+    "converter": "Converter",
+    "library": "Biblioteca",
+    "settings": "Configurações"
+  },
+  "home": {
+    "badge": "Para DJs",
+    "title": "LKR DJ TOOL",
+    "subtitle": "Baixe músicas e converta áudio com qualidade de clube — tudo no seu computador.",
+    "ctaDownload": "Ripar Música",
+    "ctaConvert": "Converter áudio",
+    "downloadDesc": "Baixe de YouTube, SoundCloud e Spotify em MP3 ou WAV.",
+    "convertDesc": "Converta vários arquivos para MP3, WAV, FLAC ou M4A.",
+    "open": "Abrir",
+    "features": {
+      "platforms": "YouTube, SoundCloud e Spotify",
+      "private": "Privado — nada sai do seu PC",
+      "quality": "MP3, WAV, FLAC e mais"
+    }
+  },
+  "downloader": {
+    "title": "Ripar Música",
+    "subtitle": "Cole o link e baixe em alta qualidade",
+    "tabs": {
+      "youtube": "YouTube",
+      "soundcloud": "SoundCloud",
+      "spotify": "Spotify",
+      "beatport": "Beatport"
+    },
+    "beatportHint": "Baixa direto do Beatport e entrega em WAV, prontinho pra tocar.",
+    "beatportBadge": "Entregue em WAV",
+    "beatportConnectTitle": "Conecte sua conta do Telegram",
+    "beatportConnectDesc": "O Beatport funciona através do Telegram. Conecte uma vez e pronto.",
+    "beatportConnectBtn": "Conectar Telegram",
+    "urlLabel": "Link da música",
+    "urlPlaceholder": "Cole o link aqui...",
+    "format": "Formato",
+    "formatMp3": "MP3",
+    "formatWav": "WAV",
+    "download": "Baixar",
+    "downloading": "Baixando...",
+    "converting": "Preparando arquivo...",
+    "success": "Pronto! Sua música foi salva.",
+    "openFile": "Ver arquivo",
+    "openFolder": "Abrir pasta",
+    "spotifyHint": "Encontramos a mesma faixa automaticamente para você.",
+    "errors": {
+      "invalidUrl": "Esse link não parece válido. Confira e tente de novo.",
+      "failed": "Não conseguimos baixar agora. Tente outro link.",
+      "tools": "O app precisa ser reinstalado. Feche e abra de novo."
+    }
+  },
+  "converter": {
+    "title": "Converter Áudio",
+    "subtitle": "Transforme vários arquivos de uma vez",
+    "addFiles": "Adicionar arquivos",
+    "addMore": "Adicionar mais",
+    "clear": "Limpar lista",
+    "dropzone": "Clique para escolher arquivos",
+    "dropzoneHint": "Você pode selecionar vários de uma vez",
+    "queue": "Na fila",
+    "format": "Salvar como",
+    "formatMp3": "MP3",
+    "formatWav": "WAV",
+    "formatFlac": "FLAC",
+    "formatM4a": "M4A",
+    "convert": "Converter tudo",
+    "converting": "Convertendo",
+    "of": "de",
+    "success": "Conversão finalizada!",
+    "successCount": "{count} arquivo(s) convertido(s)",
+    "partialSuccess": "{ok} convertidos, {fail} com erro",
+    "openFolder": "Abrir pasta",
+    "errors": {
+      "unsupported": "Um dos arquivos não é suportado",
+      "failed": "Não foi possível converter. Tente novamente.",
+      "noFile": "Adicione pelo menos um arquivo."
+    }
+  },
+  "telegram": {
+    "title": "Conta do Telegram",
+    "subtitle": "Necessária para baixar do Beatport",
+    "why": "O Beatport é baixado através de um bot do Telegram. Conecte sua conta uma vez — seus dados ficam só no seu computador.",
+    "connected": "Conectado",
+    "notConnected": "Não conectado",
+    "connectedAs": "Conectado como {name}",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "step1Title": "Suas credenciais do Telegram",
+    "step1Desc": "Pegue seu API ID e API Hash gratuitos no site do Telegram (leva 1 minuto).",
+    "getCredentials": "Como conseguir minhas credenciais",
+    "apiId": "API ID",
+    "apiHash": "API Hash",
+    "phone": "Telefone (com DDD e país)",
+    "phonePlaceholder": "+55 11 99999-9999",
+    "step2Title": "Digite o código",
+    "step2Desc": "Enviamos um código no seu Telegram. Digite ele abaixo.",
+    "code": "Código de confirmação",
+    "step3Title": "Senha de duas etapas",
+    "step3Desc": "Sua conta tem verificação em duas etapas. Digite sua senha.",
+    "password": "Senha",
+    "continue": "Continuar",
+    "back": "Voltar",
+    "sending": "Enviando...",
+    "verifying": "Verificando...",
+    "success": "Telegram conectado!",
+    "errorGeneric": "Algo deu errado. Confira os dados e tente de novo."
+  },
+  "library": {
+    "title": "Biblioteca",
+    "subtitle": "Tudo que você baixou fica aqui",
+    "empty": "Sua biblioteca está vazia",
+    "emptyHint": "As músicas que você baixar vão aparecer aqui. Você pode arrastá-las direto pro seu software de DJ.",
+    "count": "{count} faixa(s)",
+    "dragHint": "Dica: arraste qualquer faixa direto pro Rekordbox, Serato ou Finder.",
+    "openFile": "Ver arquivo",
+    "openFolder": "Abrir pasta",
+    "openLink": "Link original",
+    "remove": "Remover da lista",
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "daysAgo": "há {n} dias"
+  },
+  "settings": {
+    "title": "Configurações",
+    "outputFolder": "Onde salvar os arquivos",
+    "changeFolder": "Mudar pasta",
+    "openFolder": "Abrir pasta",
+    "status": "Status",
+    "ready": "Tudo pronto para usar",
+    "needsAttention": "Algo precisa de atenção — reabra o app",
+    "version": "Versão",
+    "disclaimer": "Use apenas músicas que você tem direito de baixar."
+  },
+  "common": {
+    "back": "Voltar",
+    "remove": "Remover"
+  }
+}

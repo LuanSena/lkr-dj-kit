@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #070912;
+  --bg-elev: #0c1020;
+  --foreground: #e9ecf5;
+  --muted: rgba(233, 236, 245, 0.55);
+  --accent-cyan: #22d3ee;
+  --accent-violet: #8b5cf6;
+  --accent-pink: #f472b6;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--foreground);
+  --font-sans: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Focus: no ugly default outline on mouse/programmatic focus,
+   clean accent ring for keyboard users. */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.7);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.font-display {
+  font-family: "Syne", system-ui, sans-serif;
+}
+
+.font-mono-tech {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Accent text gradient */
+.text-gradient {
+  background: linear-gradient(100deg, var(--accent-cyan), var(--accent-violet) 55%, var(--accent-pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Panels */
+.panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 20px 50px -30px rgba(0, 0, 0, 0.9);
+}
+
+.panel-hover {
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.panel-hover:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.06), rgba(139, 92, 246, 0.03));
+  box-shadow: 0 24px 60px -28px rgba(34, 211, 238, 0.35);
+}
+
+/* Inputs */
+.field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.9rem 1rem;
+  font-size: 0.95rem;
+  color: var(--foreground);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-family: "JetBrains Mono", monospace;
+}
+.field::placeholder {
+  color: rgba(233, 236, 245, 0.3);
+}
+.field:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.6);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+}
+
+/* Ambient background orbs */
+@keyframes drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, 6%, 0) scale(1.08); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); }
+  50% { transform: translate3d(-5%, -4%, 0) scale(1); }
+}
+.orb-a { animation: drift-a 18s ease-in-out infinite; }
+.orb-b { animation: drift-b 22s ease-in-out infinite; }
+
+/* Subtle equalizer bars used as decorative accents */
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "app/api/download/**/*.ts": {
-      "maxDuration": 300
-    }
-  }
-}

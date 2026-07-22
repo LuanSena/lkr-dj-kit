@@ -1,0 +1,98 @@
+{
+  "name": "lkr-dj-tools-desktop",
+  "version": "0.1.0",
+  "description": "LKR DJ TOOLs — desktop app for Windows and macOS",
+  "private": true,
+  "author": "Luan Sena",
+  "license": "MIT",
+  "main": "dist-electron/main.js",
+  "engines": {
+    "node": ">=20 <25"
+  },
+  "scripts": {
+    "dev": "vite",
+    "postinstall": "node scripts/ensure-electron.mjs && node scripts/ensure-ytdlp.mjs",
+    "build": "npm run electron:compile && vite build",
+    "preview": "vite preview",
+    "electron:compile": "tsc -p tsconfig.node.json",
+    "electron:dev": "npm run electron:compile && concurrently -k \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 env -u ELECTRON_RUN_AS_NODE node ./node_modules/electron/cli.js .\"",
+    "electron:build": "npm run build && electron-builder --mac --win",
+    "electron:build:mac": "npm run build && electron-builder --mac",
+    "electron:build:win": "npm run build && electron-builder --win",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "ffmpeg-static": "^5.2.0",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.25.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.6.0",
+    "telegram": "^2.26.22"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "@types/node": "^20.19.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "concurrently": "^9.2.0",
+    "cross-env": "^7.0.3",
+    "electron": "^36.5.0",
+    "electron-builder": "^26.0.12",
+    "tailwindcss": "^4.1.8",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.luansena.lkrdjtools",
+    "productName": "LKR DJ TOOLs",
+    "copyright": "Copyright © 2026 Luan Sena",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/ffmpeg-static",
+        "to": "ffmpeg-static",
+        "filter": [
+          "ffmpeg",
+          "ffmpeg.exe"
+        ]
+      },
+      {
+        "from": "bin",
+        "to": "bin",
+        "filter": [
+          "yt-dlp",
+          "yt-dlp.exe"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.music",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "LKR-DJ-TOOLs-${version}-mac.${ext}"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "LKR-DJ-TOOLs-${version}-win.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

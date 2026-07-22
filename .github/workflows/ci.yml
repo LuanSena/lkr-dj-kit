@@ -7,8 +7,11 @@ on:
     branches: [main]
 
 jobs:
-  quality:
+  desktop:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: desktop
 
     steps:
       - name: Checkout
@@ -17,14 +20,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: 20
           cache: npm
+          cache-dependency-path: desktop/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Build
-        run: npm run build
+      - name: Typecheck
+        run: npm run typecheck

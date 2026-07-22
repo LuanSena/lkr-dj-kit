@@ -43,3 +43,9 @@ next-env.d.ts
 
 # generated from @ffmpeg/core on postinstall
 /public/ffmpeg/
+
+# desktop app build artifacts
+/desktop/node_modules/
+/desktop/dist/
+/desktop/dist-electron/
+/desktop/release/

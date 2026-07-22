@@ -3,80 +3,59 @@
 [![CI](https://github.com/LuanSena/lkr-dj-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/LuanSena/lkr-dj-kit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Ferramentas modernas para DJs — landing page e utilitários para ripar música, converter áudio lossless e análise Rekordbox (em breve).
+App **desktop** (Windows e macOS) com ferramentas para DJs: ripar música, converter áudio lossless, baixar do Beatport e uma biblioteca com tudo que você baixou.
 
 ## Funcionalidades
 
-- **Landing page** com visual cyber/tech, animações e design responsivo
-- **Ripar Música** — YouTube, SoundCloud e Spotify (via match no YouTube)
-- **Conversor** — FLAC, M4A, MP3 e AAC para WAV lossless (100% no browser com ffmpeg.wasm)
-- **Rekordbox Analyzer** — teaser com roadmap (em desenvolvimento)
+- **Ripar Música** — YouTube, SoundCloud e Spotify (MP3/WAV) via `yt-dlp`
+- **Beatport** — baixa através da sua conta do Telegram e entrega em WAV automaticamente
+- **Converter** — MP3, WAV, FLAC e M4A, em lote, via `ffmpeg` nativo
+- **Biblioteca** — histórico de tudo que baixou (título, data, canal, link original) com itens **arrastáveis** direto pro Rekordbox/Serato/Finder
 - **i18n** — Português (BR) e Inglês
 
 ## Stack
 
-- [Next.js 16](https://nextjs.org/) (App Router)
-- TypeScript
-- Tailwind CSS v4
-- Framer Motion
-- [next-intl](https://next-intl.dev/)
-- [ffmpeg.wasm](https://ffmpegwasm.netlify.app/)
-- [youtubei.js](https://github.com/LuanRT/YouTube.js) — download do YouTube
-- soundcloud-scraper — client id do SoundCloud
-
-## Requisitos
-
-- Node.js 20+
-- npm 10+
+- [Electron](https://www.electronjs.org/) + [Vite](https://vitejs.dev/)
+- React + TypeScript
+- Tailwind CSS v4 + Framer Motion
+- `yt-dlp` (downloads) e `ffmpeg` (conversão), nativos
+- [GramJS](https://github.com/gram-js/gramjs) — integração com o Telegram (Beatport)
 
 ## Desenvolvimento
 
 ```bash
 git clone git@github.com:LuanSena/lkr-dj-kit.git
-cd lkr-dj-kit
+cd lkr-dj-kit/desktop
 npm install
-npm run dev
+npm run electron:dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000) — redireciona automaticamente para `/pt`.
+Para prototipar só a interface no navegador (com um mock da API do desktop):
 
-### Scripts
+```bash
+cd desktop && npm run dev
+```
 
-| Comando        | Descrição              |
-| -------------- | ---------------------- |
-| `npm run dev`  | Servidor de desenvolvimento |
-| `npm run build`| Build de produção      |
-| `npm run start`| Servidor de produção   |
-| `npm run lint` | ESLint                 |
+### Scripts (dentro de `desktop/`)
 
-## Deploy na Vercel
+| Comando                 | Descrição                          |
+| ----------------------- | ---------------------------------- |
+| `npm run electron:dev`  | Roda o app nativo em desenvolvimento |
+| `npm run dev`           | Só a UI no navegador (mock)        |
+| `npm run typecheck`     | Checagem de tipos                  |
+| `npm run electron:build`| Gera instaladores                  |
 
-1. Conecte o repositório [LuanSena/lkr-dj-kit](https://github.com/LuanSena/lkr-dj-kit) na Vercel
-2. Framework preset: **Next.js**
-3. Deploy — nenhuma variável de ambiente obrigatória
+## Beatport via Telegram
 
-As rotas de download usam `maxDuration: 300` configurado em `vercel.json`.
+O Beatport é baixado através de um bot do Telegram. Na primeira vez, conecte sua
+conta em **Configurações → Conta do Telegram** (API ID/Hash gratuitos em
+[my.telegram.org](https://my.telegram.org/apps) + telefone + código). Seus dados
+ficam apenas no seu computador.
 
 ## Aviso legal
 
-Use apenas para conteúdo que você tem direito de baixar. O LKR DJ TOOLs não armazena arquivos nem dados pessoais.
-
-## Estrutura
-
-```
-app/
-  [locale]/           # Páginas com i18n
-  api/download/       # API routes com streaming
-components/
-  landing/            # Hero, Footer, animações
-  tools/              # Downloader, Converter
-  animations/         # SVGs e canvas animados
-lib/
-  download/           # YouTube, SoundCloud, Spotify
-  ffmpeg/             # Wrapper ffmpeg.wasm
-messages/
-  pt.json / en.json   # Traduções
-```
+Use apenas para conteúdo que você tem direito de baixar. O LKR DJ TOOLs não
+envia arquivos nem dados pessoais para lugar nenhum — tudo roda localmente.
 
 ## Licença
 
